@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 
 export default function TodoListItem(props) {
   const [isCompleted, setIsCompleted] = useState(false);
@@ -13,20 +14,49 @@ export default function TodoListItem(props) {
     props.deleted(props.todoIndex);
   };
 
+  console.log(
+    "todoIndex:",
+    props.todoIndex,
+    "with type:",
+    typeof toString(props.todoIndex)
+  );
+
+  //const indexToString = toString(props.todoIndex);
+
   return (
-    <div
-      style={
-        isCompleted == true ? css.todoContainerCompleted : css.todoContainer
-      }
+    <Draggable
+      draggableId={props.todo.title}
+      index={props.todoIndex}
+      key={props.todo.title}
     >
-      <div style={isCompleted == true ? css.completed : css.notCompleted}>
-        {props.todo.title}
-      </div>
-      <div style={css.buttonContainer}>
-        <button onClick={completeTodoHandler}>Completed</button>
-        <button onClick={deleteTodoHandler}>Delete</button>
-      </div>
-    </div>
+      {provided => (
+        <div
+          {...provided.draggableProps}
+          {...provided.dragHandleProps}
+          ref={provided.innerRef}
+        >
+          <div
+            style={
+              isCompleted == true
+                ? css.todoContainerCompleted
+                : css.todoContainer
+            }
+          >
+            <div style={isCompleted == true ? css.completed : css.notCompleted}>
+              {props.todo.title}
+            </div>
+            <div>
+              Index:
+              {props.todoIndex}
+            </div>
+            <div style={css.buttonContainer}>
+              <button onClick={completeTodoHandler}>Completed</button>
+              <button onClick={deleteTodoHandler}>Delete</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </Draggable>
   );
 }
 
@@ -40,8 +70,6 @@ const css = {
     color: "white",
     fontSize: "20px",
     fontWeight: 500
-    //width: "100%",
-    //margin: "0 auto"
   },
   todoContainerCompleted: {
     display: "flex",
@@ -58,7 +86,6 @@ const css = {
   },
   completed: {
     textDecoration: "line-through"
-    //backgroundColor: "#bdd1ff"
   },
   notCompleted: {
     textDecoration: "none"

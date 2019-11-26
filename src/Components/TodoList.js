@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import TodoListItem from "./TodoListItem";
+import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 
 export default function TodoList(props) {
   const [newTodo, setNewTodo] = useState({ title: "", completed: false });
@@ -8,7 +9,15 @@ export default function TodoList(props) {
   const [inputValueState, setInputValueState] = useState("");
 
   let todoListArray = todoList;
-  let valueInput = "";
+
+  const reorder = (list, startIndex, endIndex) => {
+    console.log("StartIndex:", startIndex, "endIndex:", endIndex);
+    const result = list;
+    const [removed] = result.splice(startIndex, 1);
+    result.splice(endIndex, 0, removed);
+
+    return result;
+  };
 
   const onChangeTodoInputHandler = e => {
     setInputValueState(e.target.value);
@@ -38,7 +47,7 @@ export default function TodoList(props) {
     setIsUpdated(!isUpdated);
   };
 
-  const fetchTodos = () => {
+  /* const fetchTodos = () => {
     const url = "http://localhost:8080/api/entity/todo";
     fetch(url)
       .then(res => {
@@ -47,13 +56,34 @@ export default function TodoList(props) {
       .then(data => {
         console.log(data);
       });
-  };
+  }; */
+
+  function onDragEnd(result) {
+    if (!result.destination) {
+      return;
+    }
+
+    if (result.destination.index === result.source.index) {
+      return;
+    }
+
+    const reorderedTodos = reorder(
+      todoListArray,
+      result.source.index,
+      result.destination.index
+    );
+
+    console.log("result.source:", result.source);
+    console.log("Draggable todo:", reorderedTodos);
+
+    setTodoList(reorderedTodos);
+  }
 
   // when deleted remove complete
   useEffect(() => {
     setTodoList(todoListArray);
     setInputValueState("");
-    fetchTodos();
+    //fetchTodos();
   }, [isUpdated]);
 
   return (
@@ -74,15 +104,24 @@ export default function TodoList(props) {
             </button>
           </div>
         </div>
-        {todoList.map((todo, index) => (
-          <TodoListItem
-            todo={todo}
-            key={index}
-            completed={completedCallback}
-            deleted={deletedCallback}
-            todoIndex={index}
-          />
-        ))}
+        <DragDropContext onDragEnd={onDragEnd}>
+          <Droppable droppableId="list">
+            {provided => (
+              <div ref={provided.innerRef} {...provided.droppableProps}>
+                {todoList.map((todo, index) => (
+                  <TodoListItem
+                    todo={todo}
+                    key={index}
+                    completed={completedCallback}
+                    deleted={deletedCallback}
+                    todoIndex={index}
+                  />
+                ))}
+                {provided.placeholder}
+              </div>
+            )}
+          </Droppable>
+        </DragDropContext>
       </div>
     </div>
   );
