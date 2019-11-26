@@ -11,17 +11,24 @@ export default function TodoList(props) {
   let valueInput = "";
 
   const onChangeTodoInputHandler = e => {
+    setInputValueState(e.target.value);
+    console.log("input value state:", inputValueState);
     setNewTodo({ title: e.target.value, completed: false });
+
+    //setIsUpdated(!isUpdated);
   };
 
   const addNewTodoHandler = () => {
     todoListArray.push(newTodo);
     setTodoList(todoListArray);
+    setInputValueState("");
     setIsUpdated(!isUpdated);
+    console.log("input:", inputValueState);
   };
 
   const completedCallback = (completed, index) => {
     todoListArray[index].completed = completed;
+    console.log("index:", todoListArray);
     setTodoList(todoListArray);
   };
 
@@ -31,8 +38,22 @@ export default function TodoList(props) {
     setIsUpdated(!isUpdated);
   };
 
+  const fetchTodos = () => {
+    const url = "http://localhost:8080/api/entity/todo";
+    fetch(url)
+      .then(res => {
+        return res.json();
+      })
+      .then(data => {
+        console.log(data);
+      });
+  };
+
+  // when deleted remove complete
   useEffect(() => {
     setTodoList(todoListArray);
+    setInputValueState("");
+    fetchTodos();
   }, [isUpdated]);
 
   return (
@@ -46,6 +67,7 @@ export default function TodoList(props) {
               style={css.input}
               type="text"
               onChange={onChangeTodoInputHandler}
+              value={inputValueState}
             />
             <button style={css.button} onClick={addNewTodoHandler}>
               Add
@@ -55,7 +77,7 @@ export default function TodoList(props) {
         {todoList.map((todo, index) => (
           <TodoListItem
             todo={todo}
-            key={todo}
+            key={index}
             completed={completedCallback}
             deleted={deletedCallback}
             todoIndex={index}

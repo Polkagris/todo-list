@@ -9,6 +9,7 @@ export default function TodoListItem(props) {
   };
 
   const deleteTodoHandler = () => {
+    setIsCompleted(false);
     props.deleted(props.todoIndex);
   };
 
